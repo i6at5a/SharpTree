@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 [assembly: InternalsVisibleTo("tests")]
@@ -544,6 +546,95 @@ namespace SharpTree.BPlusTree
                 }
                 return x.Min.CompareTo(y.Min);
             }
+        }
+    }
+
+    public class NodeEnumerator<C> : IEnumerator<C> where C : IComparable
+    {
+        protected Node<C> initNode;
+
+        protected Stack<Node<C>> nodeStack;
+
+        protected int sidx;
+
+        /// <summary>
+        /// Initializes the enumerator.
+        /// </summary>
+        /// <param name="node">The enumerator will enumerate all nodes under the node.</param>
+        public NodeEnumerator(Node<C> node)
+        {
+            this.initNode = node;
+            this.Reset();
+        }
+
+        /// <summary>
+        /// Gets the element in the tree at the current position of the enumerator.
+        /// <summary>
+        /// <return>The element in the tree at the current position of the enumerator.</return>
+        public C Current
+        {
+            get
+            {
+                var lnode = (LeafNode<C>)this.nodeStack.Peek();
+                return lnode.keys[this.sidx];
+            }
+        }
+
+        object IEnumerator.Current => this.Current;
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Advances the enumerator to the next element of the tree.
+        /// </summary>
+        /// <return>true if the enumerator was successfully advanced to the next element;
+        /// false if the enumerator has passed the end of the tree.</return>
+        public bool MoveNext()
+        {
+            while (true)
+            {
+                if (this.nodeStack.Count == 0)
+                {
+                    return false;
+                }
+
+                if (this.nodeStack.Peek() is LeafNode<C>)
+                {
+                    var lnode = (LeafNode<C>)this.nodeStack.Peek();
+                    ++this.sidx;
+                    if (this.sidx < lnode.idx)
+                    {
+                        return true;
+                    }
+
+                    this.nodeStack.Pop();
+                    if (this.nodeStack.Count == 0)
+                    {
+                        return false;
+                    }
+                    this.sidx = -1;
+                    continue;
+                }
+
+                var bnode = (BranchNode<C>)this.nodeStack.Pop();
+                for (var i = bnode.idx; 0 <= i; i--)
+                {
+                    this.nodeStack.Push(bnode.childNodes[i]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the enumerator to its initial position, which is before the first element in the tree.
+        /// </summary>
+        [MemberNotNull(nameof(nodeStack))]
+        public void Reset()
+        {
+            this.nodeStack = new Stack<Node<C>>(new Node<C>[] { this.initNode });
+            this.sidx = -1;
         }
     }
 }

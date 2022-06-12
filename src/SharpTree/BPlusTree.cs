@@ -122,12 +122,12 @@ namespace SharpTree.BPlusTree
 
         public IEnumerator<C> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new NodeEnumerator<C>(this.root);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return this.GetEnumerator();
         }
 
         /// <summary>

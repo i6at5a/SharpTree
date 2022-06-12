@@ -607,6 +607,113 @@ public class BPlusTreeTests
     }
 
     [Test]
+    public void Enumerate_EmptyTree()
+    {
+        var tree = new TestTree<int>(11);
+        var enumerator = tree.GetEnumerator();
+        Assert.That(enumerator.MoveNext(), Is.False);
+    }
+
+    [Test]
+    public void Enumerate_TreeWithLeafNode()
+    {
+        var tree = new TestTree<int>(11);
+        var node = new LeafNode<int>(tree, new int[] { 1, 2, 3, 4, 5 });
+        tree.RootNode = node;
+
+        var enumerator = tree.GetEnumerator();
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(1));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(2));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(3));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(4));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(5));
+        Assert.That(enumerator.MoveNext(), Is.False);
+        Assert.That(enumerator.MoveNext(), Is.False);
+    }
+
+    [Test]
+    public void Enumerate_TreeWithBranchNode()
+    {
+        var tree = new TestTree<int>(4);
+        var bnode1 = new BranchNode<int>(tree, new Node<int>[] {
+                new LeafNode<int>(tree, new int[] { 1 }),
+                new LeafNode<int>(tree, new int[] { 2 }),
+                new LeafNode<int>(tree, new int[] { 3, 4 }),
+                new LeafNode<int>(tree, new int[] { 5 }),
+            });
+        var bnode2 = new BranchNode<int>(tree, new Node<int>[] {
+                new LeafNode<int>(tree, new int[] { 11 }),
+                new LeafNode<int>(tree, new int[] { 12, 13 }),
+                new LeafNode<int>(tree, new int[] { 14 })
+            });
+        var bnode3 = new BranchNode<int>(tree, new Node<int>[] {
+                new LeafNode<int>(tree, new int[] { 21 }),
+                new LeafNode<int>(tree, new int[] { 22, 23 })
+            });
+        var bnode4 = new BranchNode<int>(tree, new Node<int>[] {
+                new LeafNode<int>(tree, new int[] { 31 }),
+                new LeafNode<int>(tree, new int[] { 32 }),
+            });
+        tree.RootNode = new BranchNode<int>(tree, new Node<int>[] { bnode1, bnode2, bnode3, bnode4 });
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+
+        var enumerator = tree.GetEnumerator();
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(1));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(2));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(3));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(4));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(5));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(11));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(12));
+        enumerator.Reset();
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(1));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(2));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(3));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(4));
+        Assert.That(enumerator.Current, Is.EqualTo(4));
+        Assert.That(enumerator.Current, Is.EqualTo(4));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(5));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(11));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(12));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(13));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(14));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(21));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(22));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(23));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(31));
+        Assert.That(enumerator.MoveNext(), Is.True);
+        Assert.That(enumerator.Current, Is.EqualTo(32));
+        Assert.That(enumerator.MoveNext(), Is.False);
+        Assert.That(enumerator.MoveNext(), Is.False);
+
+    }
+
+    [Test]
     public void Remove_Values()
     {
         var tree = new TestTree<int>(3);
