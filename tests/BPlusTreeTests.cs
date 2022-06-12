@@ -431,6 +431,104 @@ public class BPlusNodeTests
         Assert.That(((BranchNode<int>)node.childNodes[0]).idx, Is.EqualTo(0));
         Assert.That(node.idx, Is.EqualTo(0));
     }
+
+    [Test]
+    public void AddAndRemove_Nodes()
+    {
+        var tree = new TestTree<int>(3);
+        tree.Add(1);
+        tree.Add(9);
+        tree.Add(2);
+        tree.Add(8);
+        tree.Add(3);
+        tree.Add(7);
+        tree.Add(4);
+        tree.Add(6);
+        tree.Add(5);
+        for (var i = 1; i < 10; ++i)
+        {
+            Assert.That(tree.Contains(1), Is.True);
+        }
+
+        Assert.That(tree.Remove(4), Is.True);
+        Assert.That(tree.Remove(5), Is.True);
+        Assert.That(tree.Remove(6), Is.True);
+
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+        Assert.That(tree.Contains(1), Is.True);
+        Assert.That(tree.Contains(2), Is.True);
+        Assert.That(tree.Contains(3), Is.True);
+        Assert.That(tree.Contains(4), Is.False);
+        Assert.That(tree.Contains(5), Is.False);
+        Assert.That(tree.Contains(6), Is.False);
+        Assert.That(tree.Contains(7), Is.True);
+        Assert.That(tree.Contains(8), Is.True);
+        Assert.That(tree.Contains(9), Is.True);
+
+        tree.Add(4);
+        tree.Add(6);
+        tree.Add(5);
+
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+        for (var i = 1; i < 10; ++i)
+        {
+            Assert.That(tree.Contains(1), Is.True);
+        }
+
+        Assert.That(tree.Remove(1), Is.True);
+        Assert.That(tree.Remove(2), Is.True);
+        Assert.That(tree.Remove(3), Is.True);
+        Assert.That(tree.Remove(4), Is.True);
+
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+        Assert.That(tree.Contains(1), Is.False);
+        Assert.That(tree.Contains(2), Is.False);
+        Assert.That(tree.Contains(3), Is.False);
+        Assert.That(tree.Contains(4), Is.False);
+        Assert.That(tree.Contains(5), Is.True);
+        Assert.That(tree.Contains(6), Is.True);
+        Assert.That(tree.Contains(7), Is.True);
+        Assert.That(tree.Contains(8), Is.True);
+        Assert.That(tree.Contains(9), Is.True);
+
+        tree.Add(1);
+        tree.Add(2);
+        tree.Add(3);
+        tree.Add(4);
+
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+        for (var i = 1; i < 10; ++i)
+        {
+            Assert.That(tree.Contains(1), Is.True);
+        }
+
+        Assert.That(tree.Remove(6), Is.True);
+        Assert.That(tree.Remove(7), Is.True);
+        Assert.That(tree.Remove(8), Is.True);
+        Assert.That(tree.Remove(9), Is.True);
+
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+        Assert.That(tree.Contains(1), Is.True);
+        Assert.That(tree.Contains(2), Is.True);
+        Assert.That(tree.Contains(3), Is.True);
+        Assert.That(tree.Contains(4), Is.True);
+        Assert.That(tree.Contains(5), Is.True);
+        Assert.That(tree.Contains(6), Is.False);
+        Assert.That(tree.Contains(7), Is.False);
+        Assert.That(tree.Contains(8), Is.False);
+        Assert.That(tree.Contains(9), Is.False);
+
+        tree.Add(6);
+        tree.Add(7);
+        tree.Add(8);
+        tree.Add(9);
+
+        Assert.That(tree.RootNode.Verify(true), Is.True);
+        for (var i = 1; i < 10; ++i)
+        {
+            Assert.That(tree.Contains(1), Is.True);
+        }
+    }
 }
 
 public class BPlusTreeTests
@@ -710,7 +808,6 @@ public class BPlusTreeTests
         Assert.That(enumerator.Current, Is.EqualTo(32));
         Assert.That(enumerator.MoveNext(), Is.False);
         Assert.That(enumerator.MoveNext(), Is.False);
-
     }
 
     [Test]

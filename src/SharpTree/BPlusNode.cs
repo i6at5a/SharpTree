@@ -262,7 +262,6 @@ namespace SharpTree.BPlusTree
             }
 
             var tornOff = this.keys[base.idx - 1];
-            Array.Copy(this.keys, base.idx, this.keys, base.idx - 1, 1);
             --base.idx;
             return (tornOff, null);
         }
@@ -451,15 +450,7 @@ namespace SharpTree.BPlusTree
                 // borrow from the right node.
                 var tornOff = this.childNodes[index + 1].TearOffLeftMost();
                 Debug.Assert(tornOff != null);
-                if (tornOff.Value.Item2 == null)
-                {
-                    this.childNodes[index].Add(tornOff.Value.Item1);
-                }
-                else
-                {
-                    this.childNodes[this.idx + 1] = tornOff.Value.Item2;
-                    ++base.idx;
-                }
+                this.childNodes[index].Add(tornOff.Value.Item1);
                 return true;
             }
 
@@ -474,7 +465,7 @@ namespace SharpTree.BPlusTree
             if (index < base.idx)
             {
                 this.childNodes[index].Append(this.childNodes[index + 1]);
-                Array.Copy(this.childNodes, index + 2, this.childNodes, index + 1, base.idx - index);
+                Array.Copy(this.childNodes, index + 2, this.childNodes, index + 1, base.idx - index - 1);
                 --base.idx;
                 return true;
             }
@@ -506,6 +497,7 @@ namespace SharpTree.BPlusTree
 
             var tornOff = this.childNodes[0];
             Array.Copy(this.childNodes, 1, this.childNodes, 0, base.idx);
+            --base.idx;
             return (tornOff.Min, tornOff);
         }
 
@@ -620,7 +612,7 @@ namespace SharpTree.BPlusTree
                 }
 
                 var bnode = (BranchNode<C>)this.nodeStack.Pop();
-                for (var i = bnode.idx; 0 <= i; i--)
+                for (var i = bnode.idx; 0 <= i; --i)
                 {
                     this.nodeStack.Push(bnode.childNodes[i]);
                 }
