@@ -335,15 +335,9 @@ namespace SharpTree.BPlusTree
         /// <return>The node split from the orginal node, or null if split does not happen.</return>
         internal override Node<C>? Add(C item)
         {
-            var searchKey = new LeafNode<C>(base.tree, new C[] { item });
-            var index = Array.BinarySearch<Node<C>>(this.childNodes, 1, base.idx, searchKey, cmp);
-            if (index < 0)
-            {
-                index = ~index - 1;
-            }
-
             BranchNode<C>? rightBranch = null;
 
+            var index = this.FindIndex(item);
             var newNode = this.childNodes[index].Add(item);
             if (newNode != null)
             {
@@ -373,14 +367,7 @@ namespace SharpTree.BPlusTree
         /// <return>true if item is found in the tree; otherwise, false.</return>
         internal override bool Contains(C item)
         {
-            var searchKey = new LeafNode<C>(base.tree, new C[] { item });
-            var index = Array.BinarySearch(this.childNodes, 1, base.idx, searchKey, cmp);
-            if (index < 0)
-            {
-                index = ~index - 1;
-            }
-
-            return this.childNodes[index].Contains(item);
+            return this.childNodes[this.FindIndex(item)].Contains(item);
         }
 
         /// <summary>
@@ -411,13 +398,7 @@ namespace SharpTree.BPlusTree
         /// <return>true if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
         public override bool Remove(C item)
         {
-            var searchKey = new LeafNode<C>(base.tree, new C[] { item });
-            var index = Array.BinarySearch<Node<C>>(this.childNodes, 1, base.idx, searchKey, cmp);
-            if (index < 0)
-            {
-                index = ~index - 1;
-            }
-
+            var index = this.FindIndex(item);
             var removed = this.childNodes[index].Remove(item);
             if (!removed)
             {
@@ -474,6 +455,19 @@ namespace SharpTree.BPlusTree
             Debug.Assert(index == base.idx);
             Debug.Assert(base.idx == 0);
             return true;
+        }
+
+        protected int FindIndex(C item)
+        {
+            var searchKey = new LeafNode<C>(base.tree, new C[] { item });
+            var index = Array.BinarySearch<Node<C>>(this.childNodes, 1, base.idx, searchKey, cmp);
+            if (index < 0)
+            {
+                index = ~index - 1;
+            }
+            Debug.Assert(0 <= index);
+            Debug.Assert(index < this.childNodes.Length);
+            return index;
         }
 
         internal override (C, Node<C>?)? TearOffRightMost()
