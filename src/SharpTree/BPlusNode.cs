@@ -41,8 +41,6 @@ namespace SharpTree.BPlusTree
         /// <return>The minimum item under the node.</return>
         internal abstract C Min { get; }
 
-        internal abstract C[] Keys { get; }
-
         /// <summary>
         /// Adds an item to the node.
         /// </summary>
@@ -57,24 +55,11 @@ namespace SharpTree.BPlusTree
         /// <return>true if item is found in the tree; otherwise, false.</return>
         internal abstract bool Contains(C item);
 
-        /// <summary>
-        /// Verify the node.
-        /// </summary>
-        /// <param name="isRoot">Suppose that the node is a root node if it is true.</param>
-        /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
-        internal abstract bool Verify(bool isRoot);
-
         /// Removes the first occurrence of a specific object from the tree.
         /// </summary>
         /// <param name="value">The object to remove from the tree.</param>
         /// <return>true if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
         public abstract bool Remove(C item);
-
-        internal abstract void FetchRightMostFrom(Node<C> node);
-
-        internal abstract void FetchLeftMostFrom(Node<C> node);
-
-        internal abstract void Append(Node<C> node);
 
         /// <summary>
         /// Returns a string that represents the node.
@@ -82,16 +67,25 @@ namespace SharpTree.BPlusTree
         /// <return>A string that represents the node.</return>
         public override string ToString()
         {
-            var sb = new StringBuilder("(");
-            sb.Append(this.Keys[0]);
-            for (var i = 1; i < this.idx; ++i)
-            {
-                sb.Append(" ");
-                sb.Append(this.Keys[i]);
-            }
-            sb.Append(")");
+            var sb = new StringBuilder();
+            this.KeyToString(sb);
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Verify the node.
+        /// </summary>
+        /// <param name="isRoot">Suppose that the node is a root node if it is true.</param>
+        /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
+        internal abstract bool Verify(bool isRoot);
+
+        internal abstract void Append(Node<C> node);
+
+        internal abstract void FetchLeftMostFrom(Node<C> node);
+
+        internal abstract void FetchRightMostFrom(Node<C> node);
+
+        internal abstract void KeyToString(StringBuilder sb);
     }
 
     public class LeafNode<C> : Node<C> where C : IComparable
@@ -133,16 +127,6 @@ namespace SharpTree.BPlusTree
             get
             {
                 return this.keys[0];
-            }
-        }
-
-        internal override C[] Keys
-        {
-            get
-            {
-                var k = new C[base.idx];
-                Array.Copy(this.keys, k, k.Length);
-                return k;
             }
         }
 
@@ -192,6 +176,23 @@ namespace SharpTree.BPlusTree
             return 0 <= index;
         }
 
+        /// Removes the first occurrence of a specific object from the tree.
+        /// </summary>
+        /// <param name="value">The object to remove from the tree.</param>
+        /// <return>true if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
+        public override bool Remove(C item)
+        {
+            var index = Array.BinarySearch(this.keys, 0, base.idx, item);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            Array.Copy(this.keys, index + 1, this.keys, index, base.idx - index);
+            --base.idx;
+            return true;
+        }
+
         /// <summary>
         /// Verify the node.
         /// </summary>
@@ -212,23 +213,6 @@ namespace SharpTree.BPlusTree
             return true;
         }
 
-        /// Removes the first occurrence of a specific object from the tree.
-        /// </summary>
-        /// <param name="value">The object to remove from the tree.</param>
-        /// <return>true if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
-        public override bool Remove(C item)
-        {
-            var index = Array.BinarySearch(this.keys, 0, base.idx, item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            Array.Copy(this.keys, index + 1, this.keys, index, base.idx - index);
-            --base.idx;
-            return true;
-        }
-
         internal override void Append(Node<C> node)
         {
             if (node is BranchNode<C>)
@@ -239,23 +223,6 @@ namespace SharpTree.BPlusTree
             var lnode = (LeafNode<C>)node;
             Array.Copy(lnode.keys, 0, this.keys, base.idx, lnode.idx);
             base.idx += lnode.idx;
-        }
-
-        internal override void FetchRightMostFrom(Node<C> node)
-        {
-            Debug.Assert(base.idx + 1 < base.tree.Order);
-            Debug.Assert(node is LeafNode<C>);
-
-            if (node.idx == 0)
-            {
-                return;
-            }
-
-            var fromNode = (LeafNode<C>)node;
-            Array.Copy(this.keys, 0, this.keys, 1, base.idx);
-            this.keys[0] = fromNode.keys[fromNode.idx - 1];
-            base.idx += 1;
-            --node.idx;
         }
 
         internal override void FetchLeftMostFrom(Node<C> node)
@@ -273,6 +240,35 @@ namespace SharpTree.BPlusTree
             Array.Copy(fromNode.keys, 1, fromNode.keys, 0, fromNode.idx - 1);
             base.idx += 1;
             --node.idx;
+        }
+
+        internal override void FetchRightMostFrom(Node<C> node)
+        {
+            Debug.Assert(base.idx + 1 < base.tree.Order);
+            Debug.Assert(node is LeafNode<C>);
+
+            if (node.idx == 0)
+            {
+                return;
+            }
+    
+            var fromNode = (LeafNode<C>)node;
+            Array.Copy(this.keys, 0, this.keys, 1, base.idx);
+            this.keys[0] = fromNode.keys[fromNode.idx - 1];
+            base.idx += 1;
+            --node.idx;
+        }
+
+        internal override void KeyToString(StringBuilder sb)
+        {
+            sb.Append("L(");
+            sb.Append(this.keys[0]);
+            for (var i = 1; i < this.idx; ++i)
+            {
+                sb.Append(" ");
+                sb.Append(this.keys[i]);
+            }
+            sb.Append(")");
         }
     }
 
@@ -308,19 +304,6 @@ namespace SharpTree.BPlusTree
             get
             {
                 return this.childNodes[0].Min;
-            }
-        }
-
-        internal override C[] Keys
-        {
-            get
-            {
-                var k = new C[base.idx];
-                for (var i = 1; i <= base.idx; ++i)
-                {
-                    k[i - 1] = this.childNodes[i].Min;
-                }
-                return k;
             }
         }
 
@@ -364,28 +347,6 @@ namespace SharpTree.BPlusTree
         internal override bool Contains(C item)
         {
             return this.childNodes[this.FindIndex(item)].Contains(item);
-        }
-
-        /// <summary>
-        /// Very the node.
-        /// </summary>
-        /// <param name="isRoot">Suppose that the node is a root node if it is true.</param>
-        /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
-        internal override bool Verify(bool isRoot)
-        {
-            if (isRoot && base.idx < 0) { return false; }
-            if (!isRoot && base.idx + 1 < base.tree.minc) { return false; }
-            if (base.tree.Order <= base.idx) { return false; }
-            for (var i = 0; i < base.idx; ++i)
-            {
-                if (!this.childNodes[i].Verify(false)) { return false; }
-                if (this.childNodes[i + 1].Min.CompareTo(this.childNodes[i].Min) < 0)
-                {
-                    return false;
-                }
-            }
-            if (!this.childNodes[base.idx].Verify(false)) { return false; }
-            return true;
         }
 
         /// Removes the first occurrence of a specific object from the tree.
@@ -440,34 +401,33 @@ namespace SharpTree.BPlusTree
             return true;
         }
 
-        protected int FindIndex(C item)
+        /// <summary>
+        /// Very the node.
+        /// </summary>
+        /// <param name="isRoot">Suppose that the node is a root node if it is true.</param>
+        /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
+        internal override bool Verify(bool isRoot)
         {
-            var searchKey = new LeafNode<C>(base.tree, new C[] { item });
-            var index = Array.BinarySearch<Node<C>>(this.childNodes, 1, base.idx, searchKey, cmp);
-            if (index < 0)
+            if (isRoot && base.idx < 0) { return false; }
+            if (!isRoot && base.idx + 1 < base.tree.minc) { return false; }
+            if (base.tree.Order <= base.idx) { return false; }
+            for (var i = 0; i < base.idx; ++i)
             {
-                index = ~index - 1;
+                if (!this.childNodes[i].Verify(false)) { return false; }
+                if (this.childNodes[i + 1].Min.CompareTo(this.childNodes[i].Min) < 0)
+                {
+                    return false;
+                }
             }
-            Debug.Assert(0 <= index);
-            Debug.Assert(index < this.childNodes.Length);
-            return index;
+            if (!this.childNodes[base.idx].Verify(false)) { return false; }
+            return true;
         }
 
-        internal override void FetchRightMostFrom(Node<C> node)
+        internal override void Append(Node<C> node)
         {
-            Debug.Assert(base.idx + 1 < base.tree.Order);
-            Debug.Assert(node is BranchNode<C>);
-
-            if (node.idx == 0)
-            {
-                return;
-            }
-
-            var fromNode = (BranchNode<C>)node;
-            Array.Copy(this.childNodes, 0, this.childNodes, 1, base.idx);
-            this.childNodes[0] = fromNode.childNodes[fromNode.idx];
-            base.idx += 1;
-            --node.idx;
+            var bnode = (BranchNode<C>)node;
+            Array.Copy(bnode.childNodes, 0, this.childNodes, base.idx + 1, bnode.idx + 1);
+            base.idx += bnode.idx + 1;
         }
 
         internal override void FetchLeftMostFrom(Node<C> node)
@@ -487,11 +447,45 @@ namespace SharpTree.BPlusTree
             --node.idx;
         }
 
-        internal override void Append(Node<C> node)
+        internal override void FetchRightMostFrom(Node<C> node)
         {
-            var bnode = (BranchNode<C>)node;
-            Array.Copy(bnode.childNodes, 0, this.childNodes, base.idx + 1, bnode.idx + 1);
-            base.idx += bnode.idx + 1;
+            Debug.Assert(base.idx + 1 < base.tree.Order);
+            Debug.Assert(node is BranchNode<C>);
+
+            if (node.idx == 0)
+            {
+                return;
+            }
+
+            var fromNode = (BranchNode<C>)node;
+            Array.Copy(this.childNodes, 0, this.childNodes, 1, base.idx);
+            this.childNodes[0] = fromNode.childNodes[fromNode.idx];
+            base.idx += 1;
+            --node.idx;
+        }
+
+        protected int FindIndex(C item)
+        {
+            var searchKey = new LeafNode<C>(base.tree, new C[] { item });
+            var index = Array.BinarySearch<Node<C>>(this.childNodes, 1, base.idx, searchKey, cmp);
+            if (index < 0)
+            {
+                index = ~index - 1;
+            }
+            Debug.Assert(0 <= index);
+            Debug.Assert(index < this.childNodes.Length);
+            return index;
+        }
+
+        internal override void KeyToString(StringBuilder sb)
+        {
+            sb.Append("B(");
+            for (var i = 1; i <= this.idx; ++i)
+            {
+                sb.Append(" ");
+                sb.Append(this.childNodes[i].ToString());
+            }
+            sb.Append(")");
         }
 
         public class BranchNodeComparer : IComparer<Node<C>>
