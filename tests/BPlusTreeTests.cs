@@ -292,35 +292,28 @@ public class BPlusNodeTests
         var bnode1 = new BranchNode<int>(tree, new Node<int>[] {
                 new LeafNode<int>(tree, new int[] { 1 }),
                 new LeafNode<int>(tree, new int[] { 2 }),
-                new LeafNode<int>(tree, new int[] { 3, 4 }),
-                new LeafNode<int>(tree, new int[] { 5 }),
+                new LeafNode<int>(tree, new int[] { 3 }),
+                new LeafNode<int>(tree, new int[] { 4, 5 }),
             });
         var bnode2 = new BranchNode<int>(tree, new Node<int>[] {
-                new LeafNode<int>(tree, new int[] { 11 }),
                 new LeafNode<int>(tree, new int[] { 12, 13 }),
                 new LeafNode<int>(tree, new int[] { 14 })
             });
         var bnode3 = new BranchNode<int>(tree, new Node<int>[] {
                 new LeafNode<int>(tree, new int[] { 21 }),
-                new LeafNode<int>(tree, new int[] { 22, 23 })
+                new LeafNode<int>(tree, new int[] { 22, 23 }),
             });
         var bnode4 = new BranchNode<int>(tree, new Node<int>[] {
                 new LeafNode<int>(tree, new int[] { 31 }),
                 new LeafNode<int>(tree, new int[] { 32 }),
+                new LeafNode<int>(tree, new int[] { 33 }),
             });
         var node = new BranchNode<int>(tree, new Node<int>[] { bnode1, bnode2, bnode3, bnode4 });
         Assert.That(node.Verify(true), Is.True);
 
         Assert.That(node.Remove(0), Is.False); // remove nothing
-        Assert.That(node.Remove(23), Is.True); // remove simply
-        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).keys[0], Is.EqualTo(21));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).keys[0], Is.EqualTo(22));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(bnode3.idx, Is.EqualTo(1));
-        Assert.That(node.idx, Is.EqualTo(3));
 
-        Assert.That(node.Remove(5), Is.True);  // borrow from left
+        Assert.That(node.Remove(5), Is.True); // remove simply
         Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(2));
@@ -331,104 +324,128 @@ public class BPlusNodeTests
         Assert.That(((LeafNode<int>)bnode1.childNodes[3]).idx, Is.EqualTo(1));
         Assert.That(bnode1.idx, Is.EqualTo(3));
         Assert.That(node.idx, Is.EqualTo(3));
+        Assert.That(node.Verify(true), Is.True);
 
-        Assert.That(node.Remove(11), Is.True); // borrow from right
+        Assert.That(node.Remove(14), Is.True);  // borrow from left leaf node
         Assert.That(((LeafNode<int>)bnode2.childNodes[0]).keys[0], Is.EqualTo(12));
         Assert.That(((LeafNode<int>)bnode2.childNodes[0]).idx, Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode2.childNodes[1]).keys[0], Is.EqualTo(13));
         Assert.That(((LeafNode<int>)bnode2.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode2.childNodes[2]).keys[0], Is.EqualTo(14));
-        Assert.That(((LeafNode<int>)bnode2.childNodes[2]).idx, Is.EqualTo(1));
-        Assert.That(bnode2.idx, Is.EqualTo(2));
+        Assert.That(bnode2.idx, Is.EqualTo(1));
         Assert.That(node.idx, Is.EqualTo(3));
+        Assert.That(node.Verify(true), Is.True);
 
-        Assert.That(node.Remove(2), Is.True); // merge with left
+        Assert.That(node.Remove(21), Is.True); // borrow from right leaf node
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).keys[0], Is.EqualTo(22));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).keys[0], Is.EqualTo(23));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode3.idx, Is.EqualTo(1));
+        Assert.That(node.idx, Is.EqualTo(3));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(3), Is.True); // merge with left leaf node
         Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(3));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(2));
         Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[2]).keys[0], Is.EqualTo(4));
         Assert.That(((LeafNode<int>)bnode1.childNodes[2]).idx, Is.EqualTo(1));
         Assert.That(bnode1.idx, Is.EqualTo(2));
         Assert.That(node.idx, Is.EqualTo(3));
+        Assert.That(node.Verify(true), Is.True);
 
-        Assert.That(node.Remove(1), Is.True); // merge with right
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(3));
+        Assert.That(node.Remove(22), Is.True); // borrow from right branch node
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).keys[0], Is.EqualTo(23));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).keys[0], Is.EqualTo(31));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode3.idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode4.childNodes[0]).keys[0], Is.EqualTo(32));
+        Assert.That(((LeafNode<int>)bnode4.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode4.childNodes[1]).keys[0], Is.EqualTo(33));
+        Assert.That(((LeafNode<int>)bnode4.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode4.idx, Is.EqualTo(1));
+        Assert.That(node.idx, Is.EqualTo(3));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(12), Is.True); // borrow from left branch node
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(4));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(2));
         Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
         Assert.That(bnode1.idx, Is.EqualTo(1));
-        Assert.That(node.idx, Is.EqualTo(3));
-
-        Assert.That(node.Remove(22), Is.True); // merge with left branch
-        Assert.That(((LeafNode<int>)bnode2.childNodes[0]).keys[0], Is.EqualTo(12));
+        Assert.That(((LeafNode<int>)bnode2.childNodes[0]).keys[0], Is.EqualTo(4));
         Assert.That(((LeafNode<int>)bnode2.childNodes[0]).idx, Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode2.childNodes[1]).keys[0], Is.EqualTo(13));
         Assert.That(((LeafNode<int>)bnode2.childNodes[1]).idx, Is.EqualTo(1));
         Assert.That(bnode2.idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).keys[0], Is.EqualTo(14));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).keys[0], Is.EqualTo(21));
-        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(bnode2.idx, Is.EqualTo(1));
         Assert.That(node.idx, Is.EqualTo(3));
+        Assert.That(node.Verify(true), Is.True);
 
-        Assert.That(node.Remove(4), Is.True); // merge with left branch
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(3));
+        Assert.That(node.Remove(32), Is.True); // merge with left branch node
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).keys[0], Is.EqualTo(23));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).keys[0], Is.EqualTo(31));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[2]).keys[0], Is.EqualTo(33));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[2]).idx, Is.EqualTo(1));
+        Assert.That(bnode3.idx, Is.EqualTo(2));
+        Assert.That(node.idx, Is.EqualTo(2));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(23), Is.True); // merge with right leaf node
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).keys[0], Is.EqualTo(31));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).keys[0], Is.EqualTo(33));
+        Assert.That(((LeafNode<int>)bnode3.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode3.idx, Is.EqualTo(1));
+        Assert.That(node.idx, Is.EqualTo(2));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(4), Is.True); // merge with right branch node
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(12));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(2));
         Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
         Assert.That(((LeafNode<int>)bnode1.childNodes[2]).keys[0], Is.EqualTo(13));
         Assert.That(((LeafNode<int>)bnode1.childNodes[2]).idx, Is.EqualTo(1));
         Assert.That(bnode1.idx, Is.EqualTo(2));
-        Assert.That(node.idx, Is.EqualTo(2));
-
-        Assert.That(node.Remove(14), Is.True);
-        Assert.That(node.Remove(12), Is.True);
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(3));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(13));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[2]).keys[0], Is.EqualTo(21));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[2]).idx, Is.EqualTo(1));
-        Assert.That(bnode1.idx, Is.EqualTo(2));
         Assert.That(node.idx, Is.EqualTo(1));
-
-        Assert.That(node.Remove(31), Is.True);
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(3));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(13));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(bnode1.idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode4.childNodes[0]).keys[0], Is.EqualTo(21));
-        Assert.That(((LeafNode<int>)bnode4.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode4.childNodes[1]).keys[0], Is.EqualTo(32));
-        Assert.That(((LeafNode<int>)bnode4.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(bnode4.idx, Is.EqualTo(1));
-        Assert.That(node.idx, Is.EqualTo(1));
-
-        Assert.That(node.Remove(3), Is.True);
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(13));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(21));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[2]).keys[0], Is.EqualTo(32));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[2]).idx, Is.EqualTo(1));
-        Assert.That(bnode1.idx, Is.EqualTo(2));
-        Assert.That(node.idx, Is.EqualTo(0));
-
-        Assert.That(node.Remove(21), Is.True);
-        Assert.That(node.Remove(32), Is.True);
-        Assert.That(bnode1.idx, Is.EqualTo(0));
-        Assert.That(((LeafNode<int>)((BranchNode<int>)node.childNodes[0]).childNodes[0]).keys[0], Is.EqualTo(13));
-        Assert.That(((LeafNode<int>)((BranchNode<int>)node.childNodes[0]).childNodes[0]).idx, Is.EqualTo(1));
-        Assert.That(((BranchNode<int>)node.childNodes[0]).idx, Is.EqualTo(0));
-        Assert.That(node.idx, Is.EqualTo(0));
+        Assert.That(node.Verify(true), Is.True);
 
         Assert.That(node.Remove(13), Is.True);
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(2));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode1.idx, Is.EqualTo(1));
+        Assert.That(node.idx, Is.EqualTo(1));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(31), Is.True);
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(2));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[2]).keys[0], Is.EqualTo(33));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[2]).idx, Is.EqualTo(1));
+        Assert.That(bnode1.idx, Is.EqualTo(2));
+        Assert.That(node.idx, Is.EqualTo(0));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(2), Is.True);
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys[0], Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys[0], Is.EqualTo(33));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode1.idx, Is.EqualTo(1));
+        Assert.That(node.idx, Is.EqualTo(0));
+        Assert.That(node.Verify(true), Is.True);
+
+        Assert.That(node.Remove(33), Is.True);
         Assert.That(bnode1.idx, Is.EqualTo(0));
-        Assert.That(((LeafNode<int>)((BranchNode<int>)node.childNodes[0]).childNodes[0]).idx, Is.EqualTo(0));
-        Assert.That(((BranchNode<int>)node.childNodes[0]).idx, Is.EqualTo(0));
+        Assert.That(node.Remove(1), Is.True);
         Assert.That(node.idx, Is.EqualTo(0));
     }
 

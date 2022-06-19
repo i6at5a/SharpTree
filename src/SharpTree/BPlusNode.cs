@@ -63,19 +63,18 @@ namespace SharpTree.BPlusTree
         /// <param name="isRoot">Suppose that the node is a root node if it is true.</param>
         /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
         internal abstract bool Verify(bool isRoot);
+
         /// Removes the first occurrence of a specific object from the tree.
         /// </summary>
         /// <param name="value">The object to remove from the tree.</param>
         /// <return>true if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
         public abstract bool Remove(C item);
 
-        internal abstract (C, Node<C>?)? TearOffRightMost();
+        internal abstract void FetchRightMostFrom(Node<C> node);
 
-        internal abstract (C, Node<C>?)? TearOffLeftMost();
+        internal abstract void FetchLeftMostFrom(Node<C> node);
 
         internal abstract void Append(Node<C> node);
-
-        internal abstract void Prepend(Node<C> node);
 
         /// <summary>
         /// Returns a string that represents the node.
@@ -242,41 +241,38 @@ namespace SharpTree.BPlusTree
             base.idx += lnode.idx;
         }
 
-        internal override void Prepend(Node<C> node)
+        internal override void FetchRightMostFrom(Node<C> node)
         {
-            if (node is BranchNode<C>)
+            Debug.Assert(base.idx + 1 < base.tree.Order);
+            Debug.Assert(node is LeafNode<C>);
+
+            if (node.idx == 0)
             {
-                throw new NotSupportedException();
+                return;
             }
-            var lnode = (LeafNode<C>)node;
-            Array.Copy(this.keys, 0, this.keys, lnode.idx, this.idx);
-            Array.Copy(lnode.keys, 0, this.keys, 0, lnode.idx);
-            base.idx += lnode.idx;
+
+            var fromNode = (LeafNode<C>)node;
+            Array.Copy(this.keys, 0, this.keys, 1, base.idx);
+            this.keys[0] = fromNode.keys[fromNode.idx - 1];
+            base.idx += 1;
+            --node.idx;
         }
 
-        internal override (C, Node<C>?)? TearOffRightMost()
+        internal override void FetchLeftMostFrom(Node<C> node)
         {
-            if (base.idx == 0)
+            Debug.Assert(base.idx + 1 < base.tree.Order);
+            Debug.Assert(node is LeafNode<C>);
+
+            if (node.idx == 0)
             {
-                return null;
+                return;
             }
 
-            var tornOff = this.keys[base.idx - 1];
-            --base.idx;
-            return (tornOff, null);
-        }
-
-        internal override (C, Node<C>?)? TearOffLeftMost()
-        {
-            if (base.idx == 0)
-            {
-                return null;
-            }
-
-            var tornOff = this.keys[0];
-            Array.Copy(this.keys, 1, this.keys, 0, base.idx - 1);
-            --base.idx;
-            return (tornOff, null);
+            var fromNode = (LeafNode<C>)node;
+            this.keys[base.idx] = fromNode.keys[0];
+            Array.Copy(fromNode.keys, 1, fromNode.keys, 0, fromNode.idx - 1);
+            base.idx += 1;
+            --node.idx;
         }
     }
 
@@ -412,26 +408,13 @@ namespace SharpTree.BPlusTree
 
             if (0 < index && base.tree.minc - 1 < this.childNodes[index - 1].idx)
             {
-                // borrow from the left node.
-                var tornOff = this.childNodes[index - 1].TearOffRightMost();
-                Debug.Assert(tornOff != null);
-                if (tornOff.Value.Item2 == null)
-                {
-                    this.childNodes[index].Add(tornOff.Value.Item1); // FIX ME
-                }
-                else
-                {
-                    this.childNodes[index].Prepend(tornOff.Value.Item2);
-                }
+                this.childNodes[index].FetchRightMostFrom(this.childNodes[index - 1]);
                 return true;
             }
 
             if (index < base.idx && base.tree.minc - 1 < this.childNodes[index + 1].idx)
             {
-                // borrow from the right node.
-                var tornOff = this.childNodes[index + 1].TearOffLeftMost();
-                Debug.Assert(tornOff != null);
-                this.childNodes[index].Add(tornOff.Value.Item1);
+                this.childNodes[index].FetchLeftMostFrom(this.childNodes[index + 1]);
                 return true;
             }
 
@@ -470,48 +453,45 @@ namespace SharpTree.BPlusTree
             return index;
         }
 
-        internal override (C, Node<C>?)? TearOffRightMost()
+        internal override void FetchRightMostFrom(Node<C> node)
         {
-            if (base.idx == 0)
+            Debug.Assert(base.idx + 1 < base.tree.Order);
+            Debug.Assert(node is BranchNode<C>);
+
+            if (node.idx == 0)
             {
-                return null;
+                return;
             }
 
-            var tornOff = this.childNodes[base.idx];
-            --base.idx;
-            return (tornOff.Min, tornOff);
+            var fromNode = (BranchNode<C>)node;
+            Array.Copy(this.childNodes, 0, this.childNodes, 1, base.idx);
+            this.childNodes[0] = fromNode.childNodes[fromNode.idx];
+            base.idx += 1;
+            --node.idx;
         }
 
-        internal override (C, Node<C>?)? TearOffLeftMost()
+        internal override void FetchLeftMostFrom(Node<C> node)
         {
-            if (base.idx == 0)
+            Debug.Assert(base.idx < base.tree.Order);
+            Debug.Assert(node is BranchNode<C>);
+
+            if (node.idx == 0)
             {
-                return null;
+                return;
             }
 
-            var tornOff = this.childNodes[0];
-            Array.Copy(this.childNodes, 1, this.childNodes, 0, base.idx);
-            --base.idx;
-            return (tornOff.Min, tornOff);
+            var fromNode = (BranchNode<C>)node;
+            this.childNodes[base.idx + 1] = fromNode.childNodes[0];
+            Array.Copy(fromNode.childNodes, 1, fromNode.childNodes, 0, fromNode.idx);
+            base.idx += 1;
+            --node.idx;
         }
 
         internal override void Append(Node<C> node)
         {
-            if (node is LeafNode<C>)
-            {
-                throw new NotSupportedException();
-            }
-
             var bnode = (BranchNode<C>)node;
             Array.Copy(bnode.childNodes, 0, this.childNodes, base.idx + 1, bnode.idx + 1);
             base.idx += bnode.idx + 1;
-        }
-
-        internal override void Prepend(Node<C> node)
-        {
-            Array.Copy(this.childNodes, 0, this.childNodes, 1, base.idx + 1);
-            this.childNodes[0] = node;
-            base.idx += 1;
         }
 
         public class BranchNodeComparer : IComparer<Node<C>>
