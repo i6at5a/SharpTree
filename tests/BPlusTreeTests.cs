@@ -585,6 +585,66 @@ public class BPlusTreeTests
     }
 
     [Test]
+    public void Add_ToTree()
+    {
+        var tree = new TestTree<int>(3);
+
+        tree.Add(55);
+        tree.Add(47);
+        tree.Add(39);
+        tree.Add(44); // overflow
+        tree.Add(48);
+        tree.Add(45);
+        tree.Add(35); // overflow
+        tree.Add(54); // overflow
+        tree.Add(31);
+        tree.Add(32); // overflow
+        tree.Add(36);
+        tree.Add(37); // overflow
+        tree.Add(30);
+        tree.Add(33); // overflow
+
+        var root = (BranchNode<int>)tree.RootNode;
+        var bnode1 = (BranchNode<int>)root.childNodes[0];
+        var bnode11 = (BranchNode<int>)bnode1.childNodes[0];
+        Assert.That(((LeafNode<int>)bnode11.childNodes[0]).keys[0], Is.EqualTo(30));
+        Assert.That(((LeafNode<int>)bnode11.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode11.childNodes[1]).keys[0], Is.EqualTo(31));
+        Assert.That(((LeafNode<int>)bnode11.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode11.idx, Is.EqualTo(1));
+        var bnode12 = (BranchNode<int>)bnode1.childNodes[1];
+        Assert.That(((LeafNode<int>)bnode12.childNodes[0]).keys[0], Is.EqualTo(32));
+        Assert.That(((LeafNode<int>)bnode12.childNodes[0]).keys[1], Is.EqualTo(33));
+        Assert.That(((LeafNode<int>)bnode12.childNodes[0]).idx, Is.EqualTo(2));
+        Assert.That(((LeafNode<int>)bnode12.childNodes[1]).keys[0], Is.EqualTo(35));
+        Assert.That(((LeafNode<int>)bnode12.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(bnode12.idx, Is.EqualTo(1));
+        Assert.That(bnode1.idx, Is.EqualTo(1));
+        var bnode2 = (BranchNode<int>)root.childNodes[1];
+        var bnode21 = (BranchNode<int>)bnode2.childNodes[0];
+        Assert.That(((LeafNode<int>)bnode21.childNodes[0]).keys[0], Is.EqualTo(36));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[1]).keys[0], Is.EqualTo(37));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[1]).keys[1], Is.EqualTo(39));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[1]).idx, Is.EqualTo(2));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[2]).keys[0], Is.EqualTo(44));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[2]).keys[1], Is.EqualTo(45));
+        Assert.That(((LeafNode<int>)bnode21.childNodes[2]).idx, Is.EqualTo(2));
+        Assert.That(bnode21.idx, Is.EqualTo(2));
+        var bnode22 = (BranchNode<int>)bnode2.childNodes[1];
+        Assert.That(((LeafNode<int>)bnode22.childNodes[0]).keys[0], Is.EqualTo(47));
+        Assert.That(((LeafNode<int>)bnode22.childNodes[0]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode22.childNodes[1]).keys[0], Is.EqualTo(48));
+        Assert.That(((LeafNode<int>)bnode22.childNodes[1]).idx, Is.EqualTo(1));
+        Assert.That(((LeafNode<int>)bnode22.childNodes[2]).keys[0], Is.EqualTo(54));
+        Assert.That(((LeafNode<int>)bnode22.childNodes[2]).keys[1], Is.EqualTo(55));
+        Assert.That(((LeafNode<int>)bnode22.childNodes[2]).idx, Is.EqualTo(2));
+        Assert.That(bnode22.idx, Is.EqualTo(2));
+        Assert.That(bnode2.idx, Is.EqualTo(1));
+        Assert.That(root.idx, Is.EqualTo(1));
+    }
+
+    [Test]
     public void Clear_Tree()
     {
         var tree = new TestTree<int>(3);
@@ -598,44 +658,6 @@ public class BPlusTreeTests
         tree.Clear();
         Assert.That(tree.RootNode.idx, Is.EqualTo(0));
         Assert.That(tree.Count, Is.EqualTo(0));
-    }
-
-    public void Add_100Values()
-    {
-        var treeOdd = new TestTree<int>(3);
-
-        treeOdd.Add(55);
-        treeOdd.Add(47);
-        treeOdd.Add(39);
-        treeOdd.Add(44); // overflow
-        treeOdd.Add(48);
-        treeOdd.Add(45);
-        treeOdd.Add(35); // overflow
-        treeOdd.Add(54); // overflow
-        treeOdd.Add(31);
-        treeOdd.Add(32); // overflow
-        treeOdd.Add(36);
-        treeOdd.Add(37); // overflow
-        treeOdd.Add(30);
-        treeOdd.Add(33); // overflow
-
-        var root = (BranchNode<int>)treeOdd.RootNode;
-        Assert.That(root.Keys, Is.EqualTo(new int[] { 44, 54 }));
-        var bnode1 = (BranchNode<int>)root.childNodes[0];
-        Assert.That(bnode1.Keys, Is.EqualTo(new int[] { 32, 35 }));
-        Assert.That(bnode1.childNodes[0].Keys, Is.EqualTo(new int[] { 30, 31 }));
-        Assert.That(bnode1.childNodes[1].Keys, Is.EqualTo(new int[] { 32, 33 }));
-        Assert.That(bnode1.childNodes[2].Keys, Is.EqualTo(new int[] { 35, 36 }));
-        var bnode2 = (BranchNode<int>)root.childNodes[1];
-        Assert.That(bnode2.Keys, Is.EqualTo(new int[] { 44 }));
-        Assert.That(bnode2.childNodes[0].Keys, Is.EqualTo(new int[] { 37, 39 }));
-        Assert.That(bnode2.childNodes[1].Keys, Is.EqualTo(new int[] { 44, 45 }));
-        var bnode3 = (BranchNode<int>)root.childNodes[2];
-        Assert.That(bnode3.Keys, Is.EqualTo(new int[] { 54 }));
-        Assert.That(bnode3.childNodes[0].Keys, Is.EqualTo(new int[] { 47, 48 }));
-        Assert.That(bnode3.childNodes[1].Keys, Is.EqualTo(new int[] { 54, 55 }));
-
-        Assert.That(treeOdd.Count, Is.EqualTo(14));
     }
 
     [Test]
