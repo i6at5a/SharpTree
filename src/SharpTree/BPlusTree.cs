@@ -9,11 +9,11 @@ namespace SharpTree.BPlusTree
         /// <value>The constant value representing a minimum number of child nodes.</value>
         internal protected readonly int minc;
 
-        /// <value>A root node of the tree.</value>
+        /// <value>The root node of the tree.</value>
         protected Node<C> root;
 
         /// <summary>
-        /// Initializes a new instance of the B+ tree.
+        /// Initializes a new instance of the B+ tree class.
         /// </summary>
         /// <param name="order">capacity of nodes.</param>
         public BPlusTree(int order)
@@ -37,7 +37,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the tree<T>.
+        /// Gets the number of elements contained in the tree.<T>.
         /// </summary>
         /// <return>The number of elements contained in the tree.</return>
         public int Count => this.root.Count;
@@ -85,7 +85,7 @@ namespace SharpTree.BPlusTree
         /// <summary>
         /// Copies the elements of the tree to an Array, starting at a particular Array index.
         /// </summary>
-        /// <param name="array">The one-dimensional array that is the destination of the elements copied from tree.</param>
+        /// <param name="array">The one-dimensional array that is the destination of the elements copied from the tree.</param>
         /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(C[] array, int arrayIndex)
         {
@@ -120,6 +120,10 @@ namespace SharpTree.BPlusTree
             }
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the tree.
+        /// </summary>
+        /// <return>The Enumerator object that can be used to iterate through the tree.</return>
         public IEnumerator<C> GetEnumerator()
         {
             return new NodeEnumerator<C>(this.root);
