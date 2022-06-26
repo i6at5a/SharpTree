@@ -19,7 +19,7 @@ public class BPlusNodeTests
         var node = new LeafNode<int>(new TestTree<int>(5), new int[] { 1, 2 });
 
         Assert.That(node.idx, Is.EqualTo(2));
-        Assert.That(node.keys, Is.EqualTo(new int[] { 1, 2, 0, 0, 0, 0, 0 }));
+        Assert.That(node.keys, Is.EqualTo(new int[] { 1, 2, 0, 0, 0, 0 }));
     }
 
     [Test]
@@ -40,11 +40,11 @@ public class BPlusNodeTests
 
         var bnode1 = (BranchNode<int>)node.childNodes[0];
         var bnode2 = (BranchNode<int>)node.childNodes[1];
-        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys, Is.EqualTo(new int[] { 1, 0, 0, 0, 0 }));
-        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys, Is.EqualTo(new int[] { 2, 3, 0, 0, 0 }));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[0]).keys, Is.EqualTo(new int[] { 1, 0, 0, 0 }));
+        Assert.That(((LeafNode<int>)bnode1.childNodes[1]).keys, Is.EqualTo(new int[] { 2, 3, 0, 0 }));
         Assert.That(bnode1.idx, Is.EqualTo(1));
-        Assert.That(((LeafNode<int>)bnode2.childNodes[0]).keys, Is.EqualTo(new int[] { 11, 12, 0, 0, 0 }));
-        Assert.That(((LeafNode<int>)bnode2.childNodes[1]).keys, Is.EqualTo(new int[] { 13, 0, 0, 0, 0 }));
+        Assert.That(((LeafNode<int>)bnode2.childNodes[0]).keys, Is.EqualTo(new int[] { 11, 12, 0, 0 }));
+        Assert.That(((LeafNode<int>)bnode2.childNodes[1]).keys, Is.EqualTo(new int[] { 13, 0, 0, 0 }));
         Assert.That(bnode2.idx, Is.EqualTo(1));
         Assert.That(node.idx, Is.EqualTo(1));
     }

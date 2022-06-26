@@ -106,7 +106,7 @@ namespace SharpTree.BPlusTree
         /// <param name="tree">A tree where the node belongs.</param>
         public LeafNode(BPlusTree<C> tree) : base(tree)
         {
-            this.keys = new C[base.tree.Order + 2]; // with room for shifting
+            this.keys = new C[base.tree.Order + 1]; // with room for shifting
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace SharpTree.BPlusTree
                 throw new ArgumentNullException("nodes");
             }
 
-            this.childNodes = new Node<C>[base.tree.Order + 2];
+            this.childNodes = new Node<C>[base.tree.Order + 1];
 
             Array.Copy(nodes, 0, this.childNodes, 0, nodes.Length);
             base.idx = nodes.Length - 1;
