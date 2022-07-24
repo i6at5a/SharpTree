@@ -10,7 +10,7 @@ namespace SharpTree.BPlusTree
         internal protected readonly int minc;
 
         /// <value>The root node of the tree.</value>
-        protected Node<C> root;
+        protected internal Node<C> root;
 
         /// <summary>
         /// Initializes a new instance of the B+ tree class.
