@@ -6,6 +6,9 @@ namespace SharpTree.BPlusTree
 {
     public class BPlusTree<C> : ICollection<C> where C : IComparable
     {
+        /// <value>A lock object.</value>
+        private readonly object lockObj = new object();
+
         /// <value>The constant value representing a minimum number of child nodes.</value>
         internal protected readonly int minc;
 
@@ -57,10 +60,13 @@ namespace SharpTree.BPlusTree
         /// <param name="item">The object to add to the tree.</param>
         public void Add(C item)
         {
-            var promoted = this.root.Add(item);
-            if (promoted != null)
+            lock (this.lockObj)
             {
-                this.root = new BranchNode<C>(this, new Node<C>[] { this.root, promoted });
+                var promoted = this.root.Add(item);
+                if (promoted != null)
+                {
+                    this.root = new BranchNode<C>(this, new Node<C>[] { this.root, promoted });
+                }
             }
         }
 
@@ -89,33 +95,36 @@ namespace SharpTree.BPlusTree
         /// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
         public void CopyTo(C[] array, int arrayIndex)
         {
-            var s = new Stack<Node<C>>();
-            s.Push(this.root);
-            var cur = 0;
-            while (0 < s.Count)
+            lock (this.lockObj)
             {
-                var n = s.Pop();
-                if (n is BranchNode<C>)
+                var s = new Stack<Node<C>>();
+                s.Push(this.root);
+                var cur = 0;
+                while (0 < s.Count)
                 {
-                    var bnode = (BranchNode<C>)n;
-                    for (var i = bnode.idx; 0 <= i; --i)
+                    var n = s.Pop();
+                    if (n is BranchNode<C>)
                     {
-                        s.Push(bnode.childNodes[i]);
-                    }
-                    continue;
-                }
-                else
-                {
-                    var lnode = (LeafNode<C>)n;
-                    if (lnode.idx < arrayIndex)
-                    {
-                        arrayIndex -= lnode.idx;
+                        var bnode = (BranchNode<C>)n;
+                        for (var i = bnode.idx; 0 <= i; --i)
+                        {
+                            s.Push(bnode.childNodes[i]);
+                        }
                         continue;
                     }
+                    else
+                    {
+                        var lnode = (LeafNode<C>)n;
+                        if (lnode.idx < arrayIndex)
+                        {
+                            arrayIndex -= lnode.idx;
+                            continue;
+                        }
 
-                    Array.Copy(lnode.keys, arrayIndex, array, cur, lnode.idx - arrayIndex);
-                    cur += (lnode.idx - arrayIndex);
-                    arrayIndex = 0;
+                        Array.Copy(lnode.keys, arrayIndex, array, cur, lnode.idx - arrayIndex);
+                        cur += (lnode.idx - arrayIndex);
+                        arrayIndex = 0;
+                    }
                 }
             }
         }
@@ -141,12 +150,15 @@ namespace SharpTree.BPlusTree
         /// <return>True if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
         public bool Remove(C item)
         {
-            var removed = this.root.Remove(item);
-            if (this.root is BranchNode<C> && this.root.idx == 0)
+            lock (this.lockObj)
             {
-                this.root = ((BranchNode<C>)this.root).childNodes[0];
+                var removed = this.root.Remove(item);
+                if (this.root is BranchNode<C> && this.root.idx == 0)
+                {
+                    this.root = ((BranchNode<C>)this.root).childNodes[0];
+                }
+                return removed;
             }
-            return removed;
         }
     }
 }

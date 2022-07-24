@@ -1,6 +1,8 @@
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Threading;
 
 using SharpTree.BPlusTree;
 
@@ -645,6 +647,23 @@ public class BPlusTreeTests
     }
 
     [Test]
+    public void Add_InParallel()
+    {
+        var tree = new BPlusTree<int>(5);
+        Parallel.For(0, 31, id =>
+        {
+            for (var i = 0; i < 15; i++)
+            {
+                tree.Add(i);
+            }
+        });
+
+        int[] vals = new int[15];
+        tree.CopyTo(vals, 0);
+        Assert.That(vals, Is.EqualTo(new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 }));
+    }
+
+    [Test]
     public void Clear_Tree()
     {
         var tree = new TestTree<int>(3);
@@ -877,6 +896,26 @@ public class BPlusTreeTests
         Assert.That(tree.RootNode, Is.TypeOf<LeafNode<int>>());
         Assert.That(tree.Remove(6), Is.True);
         Assert.That(tree.RootNode.idx, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void Remove_InParallel()
+    {
+        var tree = new BPlusTree<int>(5);
+        for (int i = 0; i < 100; ++i)
+        {
+            tree.Add(i);
+        }
+
+        Parallel.For(0, 31, id =>
+        {
+            for (var i = 0; i < 100; i++)
+            {
+                tree.Remove(i);
+            }
+        });
+
+        Assert.That(tree.Count, Is.EqualTo(0));
     }
 }
 
