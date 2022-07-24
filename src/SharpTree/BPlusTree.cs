@@ -45,7 +45,7 @@ namespace SharpTree.BPlusTree
         /// <summary>
         /// Gets a value indicating whether the tree is read-only.
         /// </summary>
-        /// <return>Returns always false.</return>
+        /// <return>The false.</return>
         public bool IsReadOnly
         {
             get { return false; }
@@ -76,7 +76,7 @@ namespace SharpTree.BPlusTree
         /// Determines whether the tree contains a specific value.
         /// </summary>
         /// <param name="item">The object to locate in the tree.</param>
-        /// <return>true if item is found in the tree; otherwise, false.</return>
+        /// <return>True if item is found in the tree; otherwise, false.</return>
         public bool Contains(C item)
         {
             return this.root.Contains(item);
@@ -138,7 +138,7 @@ namespace SharpTree.BPlusTree
         /// Removes the first occurrence of a specific object from the tree.
         /// </summary>
         /// <param name="item">The object to remove from the tree.</param>
-        /// <return>true if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
+        /// <return>True if item was successfully removed from the tree; otherwise, false. Also returns false if item is not found.</return>
         public bool Remove(C item)
         {
             var removed = this.root.Remove(item);

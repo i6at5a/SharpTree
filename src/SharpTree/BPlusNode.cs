@@ -8,7 +8,7 @@ using System.Text;
 namespace SharpTree.BPlusTree
 {
     /// <summary>
-    /// Base class for nodes.
+    /// A base class for nodes.
     /// </summary>
     public abstract class Node<C> where C : IComparable
     {
@@ -30,7 +30,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the node.<T>
+        /// Gets the number of elements contained in the node.
         /// </summary>
         /// <return>The number of elements contained in the node.</return>
         internal protected virtual int Count
@@ -39,7 +39,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Gets the minimum item among all items under the node.<T>
+        /// Gets the minimum item among all items under the node.
         /// </summary>
         /// <return>The minimum item under the node.</return>
         internal abstract C Min { get; }
@@ -55,14 +55,14 @@ namespace SharpTree.BPlusTree
         /// Returns true if the node contains a specific value.
         /// </summary>
         /// <param name="item">The object to locate in the node.</param>
-        /// <return>true if item is found in the node; otherwise, false.</return>
+        /// <return>True if item is found in the node; otherwise, false.</return>
         internal abstract bool Contains(C item);
 
         /// <summary>
         /// Removes the first occurrence of a specific object from the node.
         /// </summary>
         /// <param name="item">The object to remove from the node.</param>
-        /// <return>true if the item was successfully removed from the node; otherwise, false. Also returns false if item is not found.</return>
+        /// <return>True if the item was successfully removed from the node; otherwise, false. Also returns false if item is not found.</return>
         public abstract bool Remove(C item);
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Verify the node.
+        /// Verifies the node.
         /// </summary>
         /// <param name="asRoot">Suppose that the node is a root node if it is true.</param>
         /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
@@ -121,16 +121,16 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the tree<T>.
+        /// Gets the number of elements contained in the node.
         /// </summary>
-        /// <return>The number of elements contained in the tree.</return>
+        /// <return>The number of elements contained in the node.</return>
         protected internal override int Count
         {
-            get => this.idx;
+            get => base.idx;
         }
 
         /// <summary>
-        /// Gets the minimum item among all items under the node.<T>
+        /// Gets the minimum item among all items under the node.
         /// </summary>
         /// <return>The minimum item under the node.</return>
         internal override C Min
@@ -180,10 +180,10 @@ namespace SharpTree.BPlusTree
         /// Returns true if the node contains a specific value.
         /// </summary>
         /// <param name="item">The object to locate in the node.</param>
-        /// <return>true if item is found in the node; otherwise, false.</return>
+        /// <return>True if item is found in the node; otherwise, false.</return>
         internal override bool Contains(C item)
         {
-            var index = Array.BinarySearch(this.keys, 0, this.idx, item);
+            var index = Array.BinarySearch(this.keys, 0, base.idx, item);
             return 0 <= index;
         }
 
@@ -191,7 +191,7 @@ namespace SharpTree.BPlusTree
         /// Removes the first occurrence of a specific object from the node.
         /// </summary>
         /// <param name="item">The object to remove from the node.</param>
-        /// <return>true if the item was successfully removed from the node; otherwise, false. Also returns false if item is not found.</return>
+        /// <return>True if the item was successfully removed from the node; otherwise, false. Also returns false if item is not found.</return>
         public override bool Remove(C item)
         {
             var index = Array.BinarySearch(this.keys, 0, base.idx, item);
@@ -206,7 +206,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Verify the node.
+        /// Verifies the node.
         /// </summary>
         /// <param name="asRoot">Suppose that the node is a root node if it is true.</param>
         /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
@@ -275,7 +275,7 @@ namespace SharpTree.BPlusTree
         {
             sb.Append("L(");
             sb.Append(this.keys[0]);
-            for (var i = 1; i < this.idx; ++i)
+            for (var i = 1; i < base.idx; ++i)
             {
                 sb.Append(" ");
                 sb.Append(this.keys[i]);
@@ -315,7 +315,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Gets the minimum item among all items under the node.<T>
+        /// Gets the minimum item among all items under the node.
         /// </summary>
         /// <return>The minimum item under the node.</return>
         internal override C Min
@@ -362,7 +362,7 @@ namespace SharpTree.BPlusTree
         /// Returns true if the node contains a specific value.
         /// </summary>
         /// <param name="item">The object to locate in the node.</param>
-        /// <return>true if item is found in the node; otherwise, false.</return>
+        /// <return>True if item is found in the node; otherwise, false.</return>
         internal override bool Contains(C item)
         {
             return this.childNodes[this.FindIndex(item)].Contains(item);
@@ -372,7 +372,7 @@ namespace SharpTree.BPlusTree
         /// Removes the first occurrence of a specific object from the node.
         /// </summary>
         /// <param name="item">The object to remove from the node.</param>
-        /// <return>true if the item was successfully removed from the node; otherwise, false. Also returns false if item is not found.</return>
+        /// <return>True if the item was successfully removed from the node; otherwise, false. Also returns false if item is not found.</return>
         public override bool Remove(C item)
         {
             var index = this.FindIndex(item);
@@ -422,7 +422,7 @@ namespace SharpTree.BPlusTree
         }
 
         /// <summary>
-        /// Very the node.
+        /// Verifies the node.
         /// </summary>
         /// <param name="asRoot">Suppose that the node is a root node if it is true.</param>
         /// <return>True if the node satisfy conditions of nodes; otherwise, false.</return>
@@ -500,7 +500,7 @@ namespace SharpTree.BPlusTree
         internal override void KeyToString(StringBuilder sb)
         {
             sb.Append("B(");
-            for (var i = 1; i <= this.idx; ++i)
+            for (var i = 1; i <= base.idx; ++i)
             {
                 sb.Append(" ");
                 sb.Append(this.childNodes[i].ToString());
@@ -570,7 +570,7 @@ namespace SharpTree.BPlusTree
         /// <summary>
         /// Advances the enumerator to the next element of the tree.
         /// </summary>
-        /// <return>true if the enumerator was successfully advanced to the next element;
+        /// <return>True if the enumerator was successfully advanced to the next element;
         /// false if the enumerator has passed the end of the tree.</return>
         public bool MoveNext()
         {
